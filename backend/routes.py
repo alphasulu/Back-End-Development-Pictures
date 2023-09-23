@@ -35,7 +35,7 @@ def count():
 ######################################################################
 @app.route("/picture", methods=["GET"])
 def get_pictures():
-    pass
+    return data
 
 ######################################################################
 # GET A PICTURE
@@ -44,15 +44,27 @@ def get_pictures():
 
 @app.route("/picture/<int:id>", methods=["GET"])
 def get_picture_by_id(id):
-    pass
+    item = list(filter(lambda x: x['id']==id, data))
+    if(len(item)>0):
+        return item[0]
+    else:
+        return {"message": "Item not found"}, 404
 
 
+# {'id': 200, 'pic_url': 'http://dummyimage.com/230x100.png/dddddd/000000', 'event_country': 'United States', 'event_state': 'California', 'event_city': 'Fremont', 'event_date': '11/2/2030'}
 ######################################################################
 # CREATE A PICTURE
 ######################################################################
 @app.route("/picture", methods=["POST"])
 def create_picture():
-    pass
+    arg = request.get_json()
+    idd = arg['id']
+    foundItem = list(filter(lambda x: x['id']==idd, data))
+    if len(foundItem)>0:
+        return {"Message": f"picture with id {idd} already present"}, 302
+    else:
+        data.append(arg)
+        return {"id": idd}, 201
 
 ######################################################################
 # UPDATE A PICTURE
@@ -61,11 +73,23 @@ def create_picture():
 
 @app.route("/picture/<int:id>", methods=["PUT"])
 def update_picture(id):
-    pass
-
+    arg = request.get_json()
+    id = arg['id']
+    foundItem = list(filter(lambda x: x['id']==id, data))
+    if len(foundItem)>0:
+        data.remove(foundItem[0])
+        data.append(arg)
+        return {"id": id}, 201
+    else:
+        return {"message": "picture not found"}, 404
 ######################################################################
 # DELETE A PICTURE
 ######################################################################
 @app.route("/picture/<int:id>", methods=["DELETE"])
 def delete_picture(id):
-    pass
+    foundItem = list(filter(lambda x: x['id']==id, data))
+    if len(foundItem)>0:
+        data.remove(foundItem[0])
+        return {"id": id}, 204
+    else:
+        return {"message": "picture not found"}, 404
